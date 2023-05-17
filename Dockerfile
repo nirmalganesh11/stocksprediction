@@ -25,3 +25,6 @@ RUN python manage.py collectstatic --noinput
 FROM nginx:latest
 COPY --from=build /code/static /static
 COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose the port
+EXPOSE 80
