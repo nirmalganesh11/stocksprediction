@@ -1,8 +1,5 @@
 # Base image
-FROM python:3.11.3
-
-# Install Nginx
-RUN apt-get update && apt-get install -y nginx
+FROM python:3.11.3 AS base
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -20,11 +17,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the Django project code to the container
 COPY . /code/
 
-# Copy the Nginx configuration file
+# Stage 2: Build the static files
+FROM base AS build
+RUN python manage.py collectstatic --noinput
+
+# Stage 3: Final image with Nginx
+FROM nginx:latest
+COPY --from=build /code/static /static
 COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port 80 for Nginx
-EXPOSE 80
-
-# Run Nginx and the Django development server
-CMD service nginx start && python manage.py runserver 0.0.0.0:8000
